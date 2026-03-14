@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Accolink Admin</title>
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<h2>Accolink Admin Dashboard</h2>
+
+<h3>Add Booking</h3>
+
+<input id="customer" placeholder="Customer Name">
+
+<select id="source">
+<option>WhatsApp</option>
+<option>Call</option>
+</select>
+
+<input id="guesthouse" placeholder="Guesthouse ID">
+
+<button onclick="addBooking()">Add Booking</button>
+
+<script type="module">
+
+import { supabase } from "./supabaseClient.js"
+
+window.addBooking = async function(){
+
+const name = document.getElementById("customer").value
+const source = document.getElementById("source").value
+const guesthouse = document.getElementById("guesthouse").value
+
+await supabase
+.from("bookings")
+.insert({
+customer_name:name,
+guesthouse_id:guesthouse,
+booking_source:source,
+status:"Pending"
+})
+
+alert("Booking Added")
+
+}
+
+</script>
+
+</body>
+</html>
