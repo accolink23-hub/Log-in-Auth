@@ -1,0 +1,33 @@
+body{
+font-family: Arial;
+background:#f4f7f5;
+padding:40px;
+}
+
+h2{
+color:#0FA958;
+}
+
+input, select{
+padding:10px;
+margin:10px;
+width:250px;
+}
+
+button{
+background:#0FA958;
+color:white;
+border:none;
+padding:10px 15px;
+margin:5px;
+border-radius:6px;
+cursor:pointer;
+}
+
+.card{
+background:white;
+padding:20px;
+margin-top:20px;
+border-radius:10px;
+box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
