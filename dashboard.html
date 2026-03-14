@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Guesthouse Dashboard</title>
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+<h2>Guesthouse Dashboard</h2>
+
+<div id="bookings"></div>
+
+<script type="module">
+
+import { supabase } from "./supabaseClient.js"
+
+const { data:userData } = await supabase.auth.getUser()
+
+const userID = userData.user.id
+
+const { data } = await supabase
+.from("bookings")
+.select("*")
+.eq("guesthouse_id",userID)
+
+let container = document.getElementById("bookings")
+
+data.forEach(b=>{
+
+container.innerHTML += `
+
+<div class="card">
+
+Customer: ${b.customer_name}<br>
+Source: ${b.booking_source}<br>
+Status: ${b.status}<br>
+
+<button onclick="updateStatus('${b.id}','Successful')">Successful</button>
+<button onclick="updateStatus('${b.id}','Pending')">Pending</button>
+<button onclick="updateStatus('${b.id}','Unsuccessful')">Unsuccessful</button>
+
+</div>
+
+`
+
+})
+
+window.updateStatus = async function(id,status){
+
+await supabase
+.from("bookings")
+.update({status:status})
+.eq("id",id)
+
+location.reload()
+
+}
+
+</script>
+
+</body>
+</html>
