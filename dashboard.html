@@ -1,65 +1,78 @@
-<!DOCTYPE html>
-<html>
-<head>
-
-<title>Guesthouse Dashboard</title>
-<link rel="stylesheet" href="style.css">
-
-</head>
-
-<body>
-
-<h2>Guesthouse Dashboard</h2>
-
-<div id="bookings"></div>
+<table id="bookingsTable">
+  <thead>
+    <tr>
+      <th>Customer</th>
+      <th>Source</th>
+      <th>Status</th>
+      <th>Date</th>
+      <th>Update Status</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
 
 <script type="module">
+import { supabase } from './supabaseClient.js';
 
-import { supabase } from "./supabaseClient.js"
+async function loadBookings() {
+  const user = supabase.auth.user(); // logged-in guesthouse owner
+  if (!user) return;
 
-const { data:userData } = await supabase.auth.getUser()
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', user.id)
+    .single();
 
-const userID = userData.user.id
+  const { data: bookings, error } = await supabase
+    .from('bookings')
+    .select('id, customer_name, booking_source, status, created_at')
+    .eq('guesthouse_id', profile.id)
+    .order('created_at', { ascending: false });
 
-const { data } = await supabase
-.from("bookings")
-.select("*")
-.eq("guesthouse_id",userID)
+  if (error) {
+    console.error(error);
+    return;
+  }
 
-let container = document.getElementById("bookings")
+  const tbody = document.querySelector('#bookingsTable tbody');
+  tbody.innerHTML = ''; // clear previous rows
 
-data.forEach(b=>{
+  bookings.forEach(b => {
+    const tr = document.createElement('tr');
 
-container.innerHTML += `
+    const date = new Date(b.created_at).toLocaleDateString();
 
-<div class="card">
+    tr.innerHTML = `
+      <td>${b.customer_name}</td>
+      <td>${b.booking_source}</td>
+      <td>${b.status}</td>
+      <td>${date}</td>
+      <td>
+        <button onclick="updateStatus('${b.id}', 'Successful')">Successful</button>
+        <button onclick="updateStatus('${b.id}', 'Pending')">Pending</button>
+        <button onclick="updateStatus('${b.id}', 'Unsuccessful')">Unsuccessful</button>
+      </td>
+    `;
 
-Customer: ${b.customer_name}<br>
-Source: ${b.booking_source}<br>
-Status: ${b.status}<br>
-
-<button onclick="updateStatus('${b.id}','Successful')">Successful</button>
-<button onclick="updateStatus('${b.id}','Pending')">Pending</button>
-<button onclick="updateStatus('${b.id}','Unsuccessful')">Unsuccessful</button>
-
-</div>
-
-`
-
-})
-
-window.updateStatus = async function(id,status){
-
-await supabase
-.from("bookings")
-.update({status:status})
-.eq("id",id)
-
-location.reload()
-
+    tbody.appendChild(tr);
+  });
 }
 
-</script>
+// Update status in Supabase
+window.updateStatus = async function(bookingId, newStatus) {
+  const { data, error } = await supabase
+    .from('bookings')
+    .update({ status: newStatus })
+    .eq('id', bookingId);
 
-</body>
-</html>
+  if (error) {
+    alert('Error updating status');
+    console.error(error);
+  } else {
+    loadBookings(); // reload table
+  }
+};
+
+loadBookings(); // initial load
+</script>
